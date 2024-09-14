@@ -4,17 +4,20 @@ import (
 	"fmt"
 
 	"github.com/blocto/solana-go-sdk/common"
+	"github.com/najeal/meteora-bot/rpc"
 	"github.com/najeal/meteora-bot/rpc/requester"
 	"github.com/najeal/meteora-bot/state"
 )
 
 type ActiveBinManager struct {
 	binFetchers map[common.PublicKey]chan struct{}
+	HttpClient  *rpc.ClientLimiter
 }
 
-func NewActiveBinManager() *ActiveBinManager {
+func NewActiveBinManager(httpClient *rpc.ClientLimiter) *ActiveBinManager {
 	return &ActiveBinManager{
 		binFetchers: map[common.PublicKey]chan struct{}{},
+		HttpClient:  httpClient,
 	}
 }
 
@@ -54,7 +57,7 @@ func (x *ActiveBinManager) Run(solanaRPCEndpoint string, updates <-chan TrackerU
 				}
 				for _, added := range tracker.Added {
 					binChan := make(chan struct{})
-					binChanReader := requester.RecurrentFetchPairAccount(solanaRPCEndpoint, added, binChan)
+					binChanReader := requester.RecurrentFetchPairAccount(x.HttpClient, solanaRPCEndpoint, added, binChan)
 					go func() {
 						for pairAccount := range binChanReader {
 							lbPair, err := state.FromLbPairAccount(pairAccount)
