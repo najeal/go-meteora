@@ -2,7 +2,6 @@ package requester
 
 import (
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/blocto/solana-go-sdk/common"
@@ -20,8 +19,7 @@ type Config struct {
 	WalletAddress     common.PublicKey
 }
 
-func RecurrentFetch(logger *zap.Logger, cfg Config, stop <-chan struct{}) <-chan []rpc.PositionAccount {
-	httpClient := &http.Client{}
+func RecurrentFetch(logger *zap.Logger, httpClient *rpc.ClientLimiter, cfg Config, stop <-chan struct{}) <-chan []rpc.PositionAccount {
 	stream := make(chan []rpc.PositionAccount)
 	go func() {
 		defer close(stream)
@@ -47,8 +45,7 @@ func RecurrentFetch(logger *zap.Logger, cfg Config, stop <-chan struct{}) <-chan
 	return stream
 }
 
-func RecurrentFetchPairAccount(solanaRPCEndpoint string, meteoraPoolAddress common.PublicKey, stop <-chan struct{}) <-chan rpc.LbPairAccount {
-	httpClient := &http.Client{}
+func RecurrentFetchPairAccount(httpClient *rpc.ClientLimiter, solanaRPCEndpoint string, meteoraPoolAddress common.PublicKey, stop <-chan struct{}) <-chan rpc.LbPairAccount {
 	stream := make(chan rpc.LbPairAccount)
 	go func() {
 		defer close(stream)

@@ -14,7 +14,7 @@ const (
 )
 
 // GetLbPairAccount returns a LbPairAccount
-func GetLbPairAccount(client *http.Client, solanaRPCEndpoint, meteoraPoolAddress string) (LbPairAccount, error) {
+func GetLbPairAccount(client HttpClient, solanaRPCEndpoint, meteoraPoolAddress string) (LbPairAccount, error) {
 	// TODO replace by logger
 	fmt.Println("GET LB PAIR", meteoraPoolAddress)
 	reqBody := RPCRequest{
@@ -35,7 +35,7 @@ func GetLbPairAccount(client *http.Client, solanaRPCEndpoint, meteoraPoolAddress
 // GetWalletPositions returns an array of PositionAccount
 // It expects a meteoraPoolAddress to return one specific PositionAccount
 // Without meteoraPoolAddress, the function returns all the PositionAccount of the wallet
-func GetWalletPositions(client *http.Client, solanaRpcEndpoint, meteoraProgramID, walletAddress, meteoraPoolAddress string) ([]PositionAccount, error) {
+func GetWalletPositions(client HttpClient, solanaRpcEndpoint, meteoraProgramID, walletAddress, meteoraPoolAddress string) ([]PositionAccount, error) {
 	// TODO replace by logger
 	fmt.Println("GET Wallet Positions", walletAddress)
 	filters := []map[string]any{
@@ -74,7 +74,7 @@ func GetWalletPositions(client *http.Client, solanaRpcEndpoint, meteoraProgramID
 	return sendRequest[[]PositionAccount](client, reqBody, solanaRpcEndpoint)
 }
 
-func sendRequest[Result any](client *http.Client, rpcReq RPCRequest, solanaRpcEndpoint string) (out Result, err error) {
+func sendRequest[Result any](client HttpClient, rpcReq RPCRequest, solanaRpcEndpoint string) (out Result, err error) {
 	// Encode the request into JSON
 	jsonReq, err := json.Marshal(rpcReq)
 	if err != nil {
