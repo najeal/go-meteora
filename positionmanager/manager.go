@@ -6,6 +6,7 @@ import (
 
 	"github.com/blocto/solana-go-sdk/common"
 	"github.com/najeal/meteora-bot/pricechecker"
+	"github.com/najeal/meteora-bot/rpc"
 	"github.com/najeal/meteora-bot/rpc/requester"
 	"github.com/najeal/meteora-bot/state"
 	"github.com/najeal/meteora-bot/store"
@@ -33,10 +34,10 @@ type Config struct {
 	WalletAddress     common.PublicKey
 }
 
-func (x *PositionManager) Run(ctx context.Context, cfg Config, st Storer, binManager *pricechecker.ActiveBinManager) {
+func (x *PositionManager) Run(ctx context.Context, cfg Config, httpClient *rpc.ClientLimiter, st Storer, binManager *pricechecker.ActiveBinManager) {
 	recurrentFetchStop := make(chan struct{})
 	defer close(recurrentFetchStop)
-	paStream := requester.RecurrentFetch(zap.NewNop(), requester.Config{
+	paStream := requester.RecurrentFetch(zap.NewNop(), httpClient, requester.Config{
 		SolanaRPCEndpoint: cfg.SolanaRPCEndpoint,
 		MeteoraProgramID:  cfg.MeteoraProgramID,
 		WalletAddress:     cfg.WalletAddress,
