@@ -83,11 +83,15 @@ func (s *IDStore) StorePublicKey(chatID int64, publicKey string) error {
 }
 
 func (s *IDStore) ReadPrivateKey(chatID int64) (string, error) {
-	return s.ReadFile(filepath.Join(walletPath, strconv.FormatInt(chatID, 10)), privateKeyFileName)
+	return s.ReadFile(filepath.Join(walletPath, strconv.FormatInt(chatID, 10)), privateKeyFileName, true)
 }
 
 func (s *IDStore) ReadPublicKey(chatID int64) (string, error) {
-	return s.ReadFile(filepath.Join(walletPath, strconv.FormatInt(chatID, 10)), publicKeyFileName)
+	return s.ReadFile(filepath.Join(walletPath, strconv.FormatInt(chatID, 10)), publicKeyFileName, true)
+}
+
+func (s *IDStore) ReadEncryptedPrivateKey(chatID int64) (string, error) {
+	return s.ReadFile(filepath.Join(walletPath, strconv.FormatInt(chatID, 10)), privateKeyFileName, false)
 }
 
 func (s *IDStore) StoreChatID(publicKey string, chatID int64) error {
@@ -126,7 +130,7 @@ func (s *IDStore) ReadChatID(publicKey string) (int64, error) {
 	return chatID, nil
 }
 
-func (s *IDStore) ReadFile(path string, fileName string) (string, error) {
+func (s *IDStore) ReadFile(path string, fileName string, decrypt bool) (string, error) {
 	fileContent, err := os.ReadFile(filepath.Join(s.root, path, fileName))
 	if err != nil {
 		if strings.Contains(err.Error(), "no such file or directory") {
@@ -134,11 +138,14 @@ func (s *IDStore) ReadFile(path string, fileName string) (string, error) {
 		}
 		return "", ErrReadFile
 	}
-	decrypted, err := s.decrypt(string(fileContent))
-	if err != nil {
-		return "", ErrDecryptFailed
+	if decrypt {
+		decrypted, err := s.decrypt(string(fileContent))
+		if err != nil {
+			return "", ErrDecryptFailed
+		}
+		return decrypted, nil
 	}
-	return decrypted, nil
+	return string(fileContent), nil
 }
 
 func (s *IDStore) encrypt(data string) string {
