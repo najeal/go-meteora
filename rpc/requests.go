@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 )
 
@@ -78,7 +77,7 @@ func sendRequest[Result any](client HttpClient, rpcReq RPCRequest, solanaRpcEndp
 	// Encode the request into JSON
 	jsonReq, err := json.Marshal(rpcReq)
 	if err != nil {
-		log.Fatalf("Error encoding request: %v", err)
+		return out, err
 	}
 	req, err := http.NewRequest(http.MethodPost, solanaRpcEndpoint, bytes.NewBuffer(jsonReq))
 	if err != nil {
@@ -87,12 +86,12 @@ func sendRequest[Result any](client HttpClient, rpcReq RPCRequest, solanaRpcEndp
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatalf("Error sending request: %v", err)
+		return out, err
 	}
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalf("Error reading response body: %v", err)
+		return out, err
 	}
 	var rpcRes RPCResponse
 	err = json.Unmarshal(body, &rpcRes)
